@@ -38,7 +38,7 @@ class OpenSCADWrapper {
       print: this.logger('stdOut'),
       printErr: this.logger('stdErr'),
     });
-    */
+    
     try {
       if (!defaultFont) {
         const baseUrl = import.meta.env.BASE_URL || '/';
@@ -79,6 +79,7 @@ class OpenSCADWrapper {
     }
 
     return instance;
+    */
   }
 
   fileExists(instance: OpenSCAD, path: string) {
