@@ -1,4 +1,5 @@
-import { default as openscad } from '@/vendor/openscad-wasm/openscad.js';
+// Temporarily disabled to fix URL construction error
+// import { default as openscad } from '@/vendor/openscad-wasm/openscad.js';
 import { ZipReader, BlobReader, Uint8ArrayWriter } from '@zip.js/zip.js';
 import { OpenSCAD } from '@/vendor/openscad-wasm/openscad.d.js';
 import WorkspaceFile from '../lib/WorkspaceFile.ts';
@@ -29,11 +30,15 @@ class OpenSCADWrapper {
   files: WorkspaceFile[] = [];
 
   async getInstance(): Promise<OpenSCAD> {
+    // Temporarily disabled to fix URL construction error
+    throw new Error('OpenSCAD temporarily disabled');
+    /*
     const instance = await openscad({
       noInitialRun: true,
       print: this.logger('stdOut'),
       printErr: this.logger('stdErr'),
     });
+    */
     try {
       if (!defaultFont) {
         const baseUrl = import.meta.env.BASE_URL || '/';
