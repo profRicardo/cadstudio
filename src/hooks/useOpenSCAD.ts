@@ -25,12 +25,18 @@ export function useOpenSCAD() {
   }, []);
 
   useEffect(() => {
-    workerRef.current = new Worker(
-      new URL('../worker/worker.ts', import.meta.url),
-      { type: 'module' },
-    );
+    try {
+      workerRef.current = new Worker(
+        new URL('../worker/worker.ts', import.meta.url),
+        { type: 'module' },
+      );
 
-    workerRef.current.addEventListener('message', eventHandler);
+      workerRef.current.addEventListener('message', eventHandler);
+    } catch (error) {
+      console.error('Failed to create worker:', error);
+      setError(new Error('Failed to initialize OpenSCAD worker'));
+      setIsError(true);
+    }
 
     return () => {
       workerRef.current?.terminate();
@@ -45,11 +51,19 @@ export function useOpenSCAD() {
 
       // Reuse existing worker if available, only create new one if needed
       if (!workerRef.current) {
-        workerRef.current = new Worker(
-          new URL('../worker/worker.ts', import.meta.url),
-          { type: 'module' },
-        );
-        workerRef.current.addEventListener('message', eventHandler);
+        try {
+          workerRef.current = new Worker(
+            new URL('../worker/worker.ts', import.meta.url),
+            { type: 'module' },
+          );
+          workerRef.current.addEventListener('message', eventHandler);
+        } catch (error) {
+          console.error('Failed to create worker:', error);
+          setError(new Error('Failed to initialize OpenSCAD worker'));
+          setIsError(true);
+          setIsCompiling(false);
+          return;
+        }
       }
 
       const message: WorkerMessage = {

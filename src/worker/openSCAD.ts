@@ -36,9 +36,9 @@ class OpenSCADWrapper {
     });
     try {
       if (!defaultFont) {
-        const fontResponse = await fetch(
-          `${import.meta.env.BASE_URL}/Geist-Regular.ttf`,
-        );
+        const baseUrl = import.meta.env.BASE_URL || '/';
+        const fontUrl = baseUrl.endsWith('/') ? `${baseUrl}Geist-Regular.ttf` : `${baseUrl}/Geist-Regular.ttf`;
+        const fontResponse = await fetch(fontUrl);
         defaultFont = await fontResponse.arrayBuffer();
       }
 
