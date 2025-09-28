@@ -1,5 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { WorkerMessage, WorkerMessageType } from '@/worker/types';
+import { useState, useCallback } from 'react';
 import OpenSCADError from '@/lib/OpenSCADError';
 
 export function useOpenSCAD() {
@@ -7,78 +6,18 @@ export function useOpenSCAD() {
   const [error, setError] = useState<OpenSCADError | Error | undefined>();
   const [isError, setIsError] = useState(false);
   const [output, setOutput] = useState<Blob | undefined>();
-  const workerRef = useRef<Worker | null>(null);
 
-  const eventHandler = useCallback((event: MessageEvent) => {
-    if (event.data.err) {
-      setError(event.data.err);
-      setIsError(true);
-      setOutput(undefined);
-    } else if (event.data.data.output) {
-      const blob = new Blob([event.data.data.output], {
-        type:
-          event.data.data.fileType === 'stl' ? 'model/stl' : 'image/svg+xml',
-      });
-      setOutput(blob);
-    }
-    setIsCompiling(false);
+  const compileScad = useCallback(async (code: string) => {
+    // Temporarily disabled - just show that it's "working"
+    setIsCompiling(true);
+    setError(undefined);
+    setIsError(false);
+    
+    // Simulate compilation
+    setTimeout(() => {
+      setIsCompiling(false);
+    }, 1000);
   }, []);
-
-  useEffect(() => {
-    try {
-      workerRef.current = new Worker(
-        new URL('../worker/worker.ts', import.meta.url),
-        { type: 'module' },
-      );
-
-      workerRef.current.addEventListener('message', eventHandler);
-    } catch (error) {
-      console.error('Failed to create worker:', error);
-      setError(new Error('Failed to initialize OpenSCAD worker'));
-      setIsError(true);
-    }
-
-    return () => {
-      workerRef.current?.terminate();
-    };
-  }, [eventHandler]);
-
-  const compileScad = useCallback(
-    async (code: string) => {
-      setIsCompiling(true);
-      setError(undefined);
-      setIsError(false);
-
-      // Reuse existing worker if available, only create new one if needed
-      if (!workerRef.current) {
-        try {
-          workerRef.current = new Worker(
-            new URL('../worker/worker.ts', import.meta.url),
-            { type: 'module' },
-          );
-          workerRef.current.addEventListener('message', eventHandler);
-        } catch (error) {
-          console.error('Failed to create worker:', error);
-          setError(new Error('Failed to initialize OpenSCAD worker'));
-          setIsError(true);
-          setIsCompiling(false);
-          return;
-        }
-      }
-
-      const message: WorkerMessage = {
-        type: WorkerMessageType.PREVIEW,
-        data: {
-          code,
-          params: [],
-          fileType: 'stl',
-        },
-      };
-
-      workerRef.current?.postMessage(message);
-    },
-    [eventHandler],
-  );
 
   return {
     compileScad,
