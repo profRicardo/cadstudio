@@ -1,50 +1,39 @@
 import { useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
 import { AuthContext } from './AuthContext';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<Session | null>(
-    JSON.parse(localStorage.getItem('session') ?? 'null'),
-  );
+  const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Initialize auth state and set up session listener
+  // Simplified auth provider that doesn't depend on Supabase
   useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        let session = null;
-        const {
-          data: { session: refreshedSession },
-        } = await supabase.auth.refreshSession();
-        if (!refreshedSession) {
-          const {
-            data: { session: newSession },
-          } = await supabase.auth.signInAnonymously();
-          session = newSession;
-        } else {
-          session = refreshedSession;
-        }
-        setSession(session);
-        localStorage.setItem('session', JSON.stringify(session));
-        setUser(session?.user ?? null);
-      } finally {
-        setIsLoading(false);
-      }
+    // Create a mock user for demo purposes
+    const mockUser: User = {
+      id: 'demo-user',
+      email: 'demo@example.com',
+      created_at: new Date().toISOString(),
+      aud: 'authenticated',
+      role: 'authenticated',
+      updated_at: new Date().toISOString(),
+      app_metadata: {},
+      user_metadata: {},
+      identities: [],
     };
 
-    initializeAuth();
+    const mockSession: Session = {
+      access_token: 'demo-token',
+      refresh_token: 'demo-refresh',
+      expires_in: 3600,
+      expires_at: Math.floor(Date.now() / 1000) + 3600,
+      token_type: 'bearer',
+      user: mockUser,
+    };
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      localStorage.setItem('session', JSON.stringify(session));
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
+    setSession(mockSession);
+    setUser(mockUser);
+    setIsLoading(false);
   }, []);
 
   return (
